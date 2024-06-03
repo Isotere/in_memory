@@ -124,6 +124,7 @@ func (c *Collection[T]) UpdateByIDs(ctx context.Context, ids []uint64, modifier 
 		return ErrEmptyModifier
 	}
 
+	// Хочу проверить, что все элементы присутствуют, чтобы потом не откатывать изменения
 	for _, id := range ids {
 		if _, ok := c.data[id]; !ok {
 			return ErrElemNotFound
