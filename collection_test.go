@@ -19,11 +19,11 @@ func TestTryOwn(t *testing.T) {
 
 	orderCollection := newCollection[collections.Order]("order")
 
-	res, err := orderCollection.TryOwn(ctx, testOwnerID)
+	res, err := orderCollection.tryOwn(ctx, testOwnerID)
 	assert.NoError(t, err)
 	assert.True(t, res)
 
-	res, err = orderCollection.TryOwn(ctx, testOwnerID2)
+	res, err = orderCollection.tryOwn(ctx, testOwnerID2)
 	assert.NoError(t, err)
 	assert.False(t, res)
 }
@@ -33,12 +33,12 @@ func TestResetOwner(t *testing.T) {
 
 	orderCollection := newCollection[collections.Order]("order")
 
-	res, err := orderCollection.TryOwn(ctx, testOwnerID)
+	res, err := orderCollection.tryOwn(ctx, testOwnerID)
 	assert.NoError(t, err)
 	assert.True(t, res)
 	assert.Equal(t, testOwnerID, orderCollection.owner.id.Load())
 
-	err = orderCollection.ResetOwner(ctx, testOwnerID)
+	err = orderCollection.resetOwner(ctx, testOwnerID)
 	assert.NoError(t, err)
 	assert.Equal(t, emptyOwnerID, orderCollection.owner.id.Load())
 }

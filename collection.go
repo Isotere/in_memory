@@ -40,7 +40,7 @@ func newCollection[T any](name string) Collection[T] {
 	}
 }
 
-func (c *Collection[T]) TryOwn(ctx context.Context, ownerID uint64) (bool, error) {
+func (c *Collection[T]) tryOwn(ctx context.Context, ownerID uint64) (bool, error) {
 	if !isQueryAllowed(ctx) {
 		return false, ErrNotAllowedOutsideExecutor
 	}
@@ -48,7 +48,7 @@ func (c *Collection[T]) TryOwn(ctx context.Context, ownerID uint64) (bool, error
 	return c.owner.id.CompareAndSwap(emptyOwnerID, ownerID), nil
 }
 
-func (c *Collection[T]) ResetOwner(ctx context.Context, ownerID uint64) error {
+func (c *Collection[T]) resetOwner(ctx context.Context, ownerID uint64) error {
 	if !isQueryAllowed(ctx) {
 		return ErrNotAllowedOutsideExecutor
 	}

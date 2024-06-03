@@ -8,8 +8,8 @@ import (
 type TransactionBodyFunc func(ctx context.Context, collectionsList *CollectionsList) error
 
 type locker interface {
-	TryOwn(ctx context.Context, ownerID uint64) (bool, error)
-	ResetOwner(ctx context.Context, ownerID uint64) error
+	tryOwn(ctx context.Context, ownerID uint64) (bool, error)
+	resetOwner(ctx context.Context, ownerID uint64) error
 }
 
 func (c *InMemoryConnection) Execute(ctx context.Context, lockerList []locker, fArgs ...TransactionBodyFunc) error {
@@ -57,7 +57,7 @@ func (c *InMemoryConnection) Execute(ctx context.Context, lockerList []locker, f
 func tryOwn(ctx context.Context, queryID uint64, lockerList []locker) bool {
 	for _, current := range lockerList {
 		// Сознательно игнорирую возможную ошибку доступа (ее можно там залогировать, но тут думаю достаточно вернуть false)
-		if ok, _ := current.TryOwn(ctx, queryID); !ok {
+		if ok, _ := current.tryOwn(ctx, queryID); !ok {
 			return false
 		}
 	}
@@ -67,6 +67,6 @@ func tryOwn(ctx context.Context, queryID uint64, lockerList []locker) bool {
 
 func resetOwner(ctx context.Context, queryID uint64, lockerList []locker) {
 	for _, current := range lockerList {
-		_ = current.ResetOwner(ctx, queryID)
+		_ = current.resetOwner(ctx, queryID)
 	}
 }
