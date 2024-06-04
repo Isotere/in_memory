@@ -49,7 +49,7 @@ func TestSelectByIDs(t *testing.T) {
 	t.Run("empty collection", func(t *testing.T) {
 		orderCollection := newCollection[collections.Order]("order")
 
-		res, err := orderCollection.SelectByIDs(ctx, []uint64{1, 2})
+		res, err := orderCollection.SelectByIDs(ctx, []ObjectID{1, 2})
 		assert.NoError(t, err)
 
 		assert.Nil(t, res)
@@ -57,10 +57,10 @@ func TestSelectByIDs(t *testing.T) {
 
 	t.Run("not empty collection, but no result", func(t *testing.T) {
 		orderCollection := newCollection[collections.Order]("order")
-		orderCollection.data[uint64(1)] = collections.Order{}
-		orderCollection.data[uint64(2)] = collections.Order{}
+		orderCollection.data[ObjectID(1)] = collections.Order{}
+		orderCollection.data[ObjectID(2)] = collections.Order{}
 
-		res, err := orderCollection.SelectByIDs(ctx, []uint64{3, 4})
+		res, err := orderCollection.SelectByIDs(ctx, []ObjectID{3, 4})
 		assert.NoError(t, err)
 
 		assert.Nil(t, res)
@@ -68,12 +68,12 @@ func TestSelectByIDs(t *testing.T) {
 
 	t.Run("not empty collection, with result", func(t *testing.T) {
 		orderCollection := newCollection[collections.Order]("order")
-		orderCollection.data[uint64(1)] = collections.Order{}
-		orderCollection.data[uint64(2)] = collections.Order{}
-		orderCollection.data[uint64(3)] = collections.Order{}
-		orderCollection.data[uint64(4)] = collections.Order{}
+		orderCollection.data[ObjectID(1)] = collections.Order{}
+		orderCollection.data[ObjectID(2)] = collections.Order{}
+		orderCollection.data[ObjectID(3)] = collections.Order{}
+		orderCollection.data[ObjectID(4)] = collections.Order{}
 
-		res, err := orderCollection.SelectByIDs(ctx, []uint64{2, 3, 5})
+		res, err := orderCollection.SelectByIDs(ctx, []ObjectID{2, 3, 5})
 		assert.NoError(t, err)
 
 		assert.Len(t, res, 2)
@@ -137,19 +137,19 @@ func TestUpdateByIDs(t *testing.T) {
 	orderCollection := testGetDummyOrderCollection()
 
 	t.Run("empty args", func(t *testing.T) {
-		err := orderCollection.UpdateByIDs(ctx, []uint64{}, nil)
+		err := orderCollection.UpdateByIDs(ctx, []ObjectID{}, nil)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrEmptyElemsList)
 	})
 
 	t.Run("nil modifier", func(t *testing.T) {
-		err := orderCollection.UpdateByIDs(ctx, []uint64{1}, nil)
+		err := orderCollection.UpdateByIDs(ctx, []ObjectID{1}, nil)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrEmptyModifier)
 	})
 
 	t.Run("success", func(t *testing.T) {
-		err := orderCollection.UpdateByIDs(ctx, []uint64{1}, func(elem collections.Order) collections.Order {
+		err := orderCollection.UpdateByIDs(ctx, []ObjectID{1}, func(elem collections.Order) collections.Order {
 			elem.RoomCategoryID = "mega-lux"
 
 			return elem
@@ -157,29 +157,29 @@ func TestUpdateByIDs(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		res, err := orderCollection.SelectByIDs(ctx, []uint64{1})
+		res, err := orderCollection.SelectByIDs(ctx, []ObjectID{1})
 		assert.NoError(t, err)
-		assert.Equal(t, "mega-lux", res[0].RoomCategoryID)
+		assert.Equal(t, "mega-lux", res[ObjectID(1)].RoomCategoryID)
 	})
 }
 
 func testGetDummyOrderCollection() *Collection[collections.Order] {
 	orderCollection := newCollection[collections.Order]("order")
-	orderCollection.data[uint64(1)] = collections.Order{
+	orderCollection.data[ObjectID(1)] = collections.Order{
 		HotelID:        "raddison",
 		RoomCategoryID: "lux",
 		UserEmail:      "admin@email.ru",
 		DateFrom:       time.Time{},
 		DateTo:         time.Time{},
 	}
-	orderCollection.data[uint64(2)] = collections.Order{
+	orderCollection.data[ObjectID(2)] = collections.Order{
 		HotelID:        "raddison2",
 		RoomCategoryID: "lux",
 		UserEmail:      "user@email.ru",
 		DateFrom:       time.Time{},
 		DateTo:         time.Time{},
 	}
-	orderCollection.data[uint64(3)] = collections.Order{
+	orderCollection.data[ObjectID(3)] = collections.Order{
 		HotelID:        "raddison3",
 		RoomCategoryID: "economy",
 		UserEmail:      "admin@email.ru",

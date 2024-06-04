@@ -54,9 +54,9 @@ func TestExecute(t *testing.T) {
 	assert.NotNil(t, res0)
 	assert.Len(t, res0, 150)
 
-	res, _ := connection.Collections().RoomAvailability.SelectByIDs(ctx, []uint64{1})
+	res, _ := connection.Collections().RoomAvailability.SelectByIDs(ctx, []ObjectID{1})
 	assert.NotNil(t, res)
-	assert.Equal(t, 150, math.MaxInt-res[0].Quota)
+	assert.Equal(t, 150, math.MaxInt-res[ObjectID(1)].Quota)
 }
 
 func testInsertBatchRoomsAvailable(ctx context.Context, conn *InMemoryConnection) error {
@@ -97,7 +97,7 @@ func testDecreaseRoomsAvailable(ctx context.Context, collectionsList *Collection
 	r := rand.N[int](5)
 	time.Sleep(time.Millisecond * time.Duration(r))
 
-	return collectionsList.RoomAvailability.UpdateByIDs(ctx, []uint64{1}, func(elem collections.RoomAvailability) collections.RoomAvailability {
+	return collectionsList.RoomAvailability.UpdateByIDs(ctx, []ObjectID{1}, func(elem collections.RoomAvailability) collections.RoomAvailability {
 		elem.Quota--
 		return elem
 	})

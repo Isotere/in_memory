@@ -24,19 +24,21 @@ type ownerStruct struct {
 	// Но в данном кейсе не придумал как сделать (source https://www.youtube.com/watch?app=desktop&v=TjzeCWaTOtM&t=0s)
 }
 
+type ObjectID uint64
+
 type Collection[T any] struct {
 	name  string
 	count atomic.Uint64
 	owner ownerStruct
 
-	data map[uint64]T
+	data map[ObjectID]T
 }
 
 func newCollection[T any](name string) Collection[T] {
 	return Collection[T]{
 		name:  name,
 		owner: ownerStruct{},
-		data:  make(map[uint64]T),
+		data:  make(map[ObjectID]T),
 	}
 }
 
@@ -58,39 +60,51 @@ func (c *Collection[T]) resetOwner(ctx context.Context, ownerID uint64) error {
 	return nil
 }
 
-func (c *Collection[T]) SelectByIDs(ctx context.Context, ids []uint64) ([]T, error) {
+func (c *Collection[T]) SelectByIDs(ctx context.Context, ids []ObjectID) (map[ObjectID]T, error) {
 	if !isQueryAllowed(ctx) {
 		return nil, ErrNotAllowedOutsideExecutor
 	}
 
-	var result []T
+	var result map[ObjectID]T
 
-	for i, v := range c.data {
-		if slices.Contains(ids, i) {
-			result = append(result, v)
+	for k, v := range c.data {
+		if !slices.Contains(ids, k) {
+			continue
 		}
+
+		if result == nil {
+			result = make(map[ObjectID]T)
+		}
+
+		result[k] = v
 	}
 
 	return result, nil
 }
 
-func (c *Collection[T]) Select(ctx context.Context, filter func(elem T) bool) ([]T, error) {
+func (c *Collection[T]) Select(ctx context.Context, filter func(elem T) bool) (map[ObjectID]T, error) {
 	if !isQueryAllowed(ctx) {
 		return nil, ErrNotAllowedOutsideExecutor
 	}
 
-	var result []T
+	var result map[ObjectID]T
 
-	for _, v := range c.data {
-		if filter(v) {
-			result = append(result, v)
+	for k, v := range c.data {
+		if !filter(v) {
+			continue
 		}
+
+		if result == nil {
+			result = make(map[ObjectID]T)
+		}
+
+		result[k] = v
 	}
 
 	return result, nil
 }
 
-func (c *Collection[T]) Insert(ctx context.Context, elems []T) ([]uint64, error) {
+func (c *Collection[T]) Insert(ctx context.Context, elems []T) ([]ObjectID, error) {
 	if !isQueryAllowed(ctx) {
 		return nil, ErrNotAllowedOutsideExecutor
 	}
@@ -99,9 +113,9 @@ func (c *Collection[T]) Insert(ctx context.Context, elems []T) ([]uint64, error)
 		return nil, ErrEmptyElemsList
 	}
 
-	resultIDs := make([]uint64, 0, len(elems))
+	resultIDs := make([]ObjectID, 0, len(elems))
 	for _, elem := range elems {
-		newID := c.count.Add(uint64(1))
+		newID := ObjectID(c.count.Add(uint64(1)))
 
 		c.data[newID] = elem
 
@@ -111,7 +125,7 @@ func (c *Collection[T]) Insert(ctx context.Context, elems []T) ([]uint64, error)
 	return resultIDs, nil
 }
 
-func (c *Collection[T]) UpdateByIDs(ctx context.Context, ids []uint64, modifier func(elem T) T) error {
+func (c *Collection[T]) UpdateByIDs(ctx context.Context, ids []ObjectID, modifier func(elem T) T) error {
 	if !isQueryAllowed(ctx) {
 		return ErrNotAllowedOutsideExecutor
 	}
@@ -138,7 +152,7 @@ func (c *Collection[T]) UpdateByIDs(ctx context.Context, ids []uint64, modifier 
 	return nil
 }
 
-func (c *Collection[T]) Delete(ctx context.Context, ids []uint64) error {
+func (c *Collection[T]) Delete(ctx context.Context, ids []ObjectID) error {
 	if !isQueryAllowed(ctx) {
 		return ErrNotAllowedOutsideExecutor
 	}
