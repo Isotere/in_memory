@@ -32,7 +32,7 @@ func TestExecute(t *testing.T) {
 
 			errRoutine := connection.Execute(
 				ctx,
-				[]locker{
+				[]Locker{
 					&connection.Collections().Orders,
 					&connection.Collections().RoomAvailability,
 				},
@@ -62,7 +62,7 @@ func TestExecute(t *testing.T) {
 func testInsertBatchRoomsAvailable(ctx context.Context, conn *InMemoryConnection) error {
 	return conn.Execute(
 		ctx,
-		[]locker{
+		[]Locker{
 			&conn.Collections().RoomAvailability,
 		},
 		func(ctx context.Context, collectionsList *CollectionsList) error {

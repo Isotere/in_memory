@@ -7,12 +7,12 @@ import (
 
 type TransactionBodyFunc func(ctx context.Context, collectionsList *CollectionsList) error
 
-type locker interface {
+type Locker interface {
 	tryOwn(ctx context.Context, ownerID uint64) (bool, error)
 	resetOwner(ctx context.Context, ownerID uint64) error
 }
 
-func (c *InMemoryConnection) Execute(ctx context.Context, lockerList []locker, fArgs ...TransactionBodyFunc) error {
+func (c *InMemoryConnection) Execute(ctx context.Context, lockerList []Locker, fArgs ...TransactionBodyFunc) error {
 	// Чтобы запрос не завис на очень долго, ставим таймаут (из настроек соединения)
 	ctx, cancel := context.WithTimeout(ctx, c.timeoutMs)
 	defer cancel()
@@ -54,7 +54,7 @@ func (c *InMemoryConnection) Execute(ctx context.Context, lockerList []locker, f
 	return nil
 }
 
-func tryOwn(ctx context.Context, queryID uint64, lockerList []locker) bool {
+func tryOwn(ctx context.Context, queryID uint64, lockerList []Locker) bool {
 	for _, current := range lockerList {
 		// Сознательно игнорирую возможную ошибку доступа (ее можно там залогировать, но тут думаю достаточно вернуть false)
 		if ok, _ := current.tryOwn(ctx, queryID); !ok {
@@ -65,7 +65,7 @@ func tryOwn(ctx context.Context, queryID uint64, lockerList []locker) bool {
 	return true
 }
 
-func resetOwner(ctx context.Context, queryID uint64, lockerList []locker) {
+func resetOwner(ctx context.Context, queryID uint64, lockerList []Locker) {
 	for _, current := range lockerList {
 		_ = current.resetOwner(ctx, queryID)
 	}
