@@ -125,6 +125,22 @@ func (c *Collection[T]) Insert(ctx context.Context, elems []T) ([]ObjectID, erro
 	return resultIDs, nil
 }
 
+func (c *Collection[T]) Update(ctx context.Context, elems map[ObjectID]T) error {
+	if !isQueryAllowed(ctx) {
+		return ErrNotAllowedOutsideExecutor
+	}
+
+	if len(elems) == 0 {
+		return nil
+	}
+
+	for k, v := range elems {
+		c.data[k] = v
+	}
+
+	return nil
+}
+
 func (c *Collection[T]) UpdateByIDs(ctx context.Context, ids []ObjectID, modifier func(elem T) T) error {
 	if !isQueryAllowed(ctx) {
 		return ErrNotAllowedOutsideExecutor
